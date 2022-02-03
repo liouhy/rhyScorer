@@ -1,12 +1,21 @@
 Package: rhyScorer
-Title: What the Package Does (One Line, Title Case)
+Title: Differential Rhythmicity analysis using scores
 Version: 0.0.0.9000
 Authors@R: 
-    person("First", "Last", , "first.last@example.com", role = c("aut", "cre"),
-           comment = c(ORCID = "YOUR-ORCID-ID"))
-Description: What the package does (one paragraph).
-License: `use_mit_license()`, `use_gpl3_license()` or friends to pick a
-    license
+    person("Huai-Yu", "Liou", , "williams8645@gmail.com", role = c("aut", "cre"),)
+Description: This package performs differential rhythmicity testing of gene sets 
+    from RNA-seq datasets using gene scores. User-defined gene sets can be 
+    enriched for highly rhythmic and phase coherent gene sets in one group or highly 
+    differentially rhythmic and phase coherent gene sets between two groups.
+License: MIT + file LICENSE
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.1.2
+Suggests: 
+    testthat (>= 3.0.0)
+Config/testthat/edition: 3
+Imports: 
+    foreach,
+    dplyr,
+    HarmonicRegression,
+    doParallel
