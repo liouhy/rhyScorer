@@ -24,7 +24,7 @@ rhyScore_test = function(data, exp_des, t2g, group = NULL,
   if (is.null(group)) {
 
     # harmonic regression for one group
-    c = t(data)
+    c = t(log2(data+1))
     t = exp_des$time
     res = HarmonicRegression::harmonic.regression(c,t,normalize=T)
 
@@ -127,7 +127,7 @@ rhyScore_test = function(data, exp_des, t2g, group = NULL,
 
     # harmonic regression for two groups
     grp_a = group[1]
-    c = t(data[,exp_des$group==grp_a])
+    c = t(log2(data[,exp_des$group==grp_a]+1))
     t = exp_des$time[exp_des$group==grp_a]
     res = HarmonicRegression::harmonic.regression(c,t,normalize=T)
 
@@ -135,7 +135,7 @@ rhyScore_test = function(data, exp_des, t2g, group = NULL,
     a_para = res[['pars']]%>%dplyr::mutate(ex = amp*exp(phi*1i))%>%dplyr::mutate(sco = ex/sqrt(ssr))
 
     grp_b = group[2]
-    c = t(data[,exp_des$group==grp_b])
+    c = t(log2(data[,exp_des$group==grp_b]+1))
     t = exp_des$time[exp_des$group==grp_b]
     res = harmonic.regression(c,t,normalize=T)
 
