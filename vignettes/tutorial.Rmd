@@ -1,0 +1,48 @@
+---
+title: "Gene set enrichment based on rhythmicity scores with rhyScorer"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{tutorial}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+This package is designed to identify the highly rhythmic or phase coherent gene sets based on our newly developed gene scoring system, which includes both the amplitude and the phase of a rhythmic gene expressions in one term. If the transcriptomic data in two groups is compared (eg. WT and KO), the function is able to enrich the highly differentially rhythmic or coherent gene sets. This tutorial will explain the principles behind the function and demonstrate examples to use this package.
+
+## Background
+The function `rhyScore()` utilizes [harmonic.regression()](https://cran.r-project.org/web/packages/HarmonicRegression/index.html) to fit normalized gene expression data to this model:
+
+\begin{equation}
+y_i=1+a_i\cos(\omega t)+b_i\sin(\omega t)
+\end{equation}
+
+with amplitude $A_i=\sqrt{(a_i^2+b_i^2)}$ and phase $\phi=\arctan(b_i/a_i)$. Note that the gene expression is further normalized by dividing with the mean. Namely, the $A_i$ used in this package represents the relative amplitude ($A_{rel}=A_{abs}/m$).
+
+We then adopt Euler's formula, $\cos\phi+j\sin\phi=e^{j\phi}$, to construct the gene score:
+
+\begin{equation}
+S_i=\frac{A_i}{\sqrt{SSR_i}}e^{j\phi_i}
+\end{equation}
+
+where $SSR$ denotes the sum of square residual of the fitting. The gene score is the exponential form of the complex number. Hence we can view the score as a vector with a certain length and direction on a complex plane. By summing up the gene scores in a gene set in different ways, we can calculate the rhythmic and coherent score describing how rhythmic and in-phase a gene set is, respectively.
+
+\begin{equation}
+Rhy.S=\sum_i\lvert S_i\rvert\\
+Coh.S=\lvert\sum_i S_i\rvert/\lvert\sum_i S_i\rvert
+\end{equation}
+
+The significance of the score of a gene set can be tested against the score of a random group of genes using bootstrapping. If we compare two group of data, the score differences of each gene set will be calculated by subtraction of scores from two groups. Similarly, the score differences will be tested against the random score differences, and the gene sets that significantly increase or decrease in amplitude or phase coherence will be identified.
+
+
+## Example
+
+```{r setup}
+library(rhyScorer)
+```
