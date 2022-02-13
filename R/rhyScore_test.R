@@ -25,11 +25,11 @@ rhyScore_test = function(data, exp_des, t2g, group = NULL, bootstrap.n = 10000) 
   `%dopar%` <- foreach::`%dopar%`
 
 
-  f_t2g = unique(t2g)%>%
-    filter(f_t2g[,2] %in% rownames(data))
+  f_t2g = unique(t2g)
+  f_t2g = dplyr::filter(f_t2g, f_t2g[,2] %in% rownames(data))
 
   # create a matrix filled with 0 with rownames as gene sets and colnames as genes we have
-  gs_m = matrix(0, nrow = length(uniue(f_t2g[,1])),
+  gs_m = matrix(0, nrow = length(unique(f_t2g[,1])),
                 ncol = nrow(data),
                 dimnames = list(unique(f_t2g[,1]),rownames(data)))
 
