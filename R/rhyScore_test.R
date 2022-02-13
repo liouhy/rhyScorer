@@ -61,13 +61,13 @@ rhyScore_test = function(data, exp_des, t2g, group = NULL,
     r_s_coh_m = foreach::foreach (j = 1:(n-1), .combine = 'cbind') %dopar% {
       r_s = sample(para$sco)
       r_s_coh = abs(gs_m %*% r_s / gs_m %*% abs(r_s))
-      r_s_coh
+      return(r_s_coh)
     }
 
     r_s_rhy_m = foreach::foreach (j = 1:(n-1), .combine = 'cbind') %dopar% {
       r_s = sample(para$sco)
       r_s_rhy = gs_m %*% abs(r_s)
-      r_s_rhy
+      return(r_s_rhy)
     }
 
     parallel::stopCluster(cl = my_cl)
@@ -175,14 +175,14 @@ rhyScore_test = function(data, exp_des, t2g, group = NULL,
       a_r_v = sample(a_para$sco)
       b_r_v = sample(b_para$sco)
       diff_r_s_coh = (abs(gs_m %*% b_r_v) / gs_m %*% abs(b_r_v))-(abs(gs_m %*% a_r_v) / gs_m %*% abs(a_r_v))
-      diff_r_s_coh
+      return(diff_r_s_coh)
     }
 
     r_diff_s_rhy_m = foreach::foreach (j = 1:(n-1), .combine = 'cbind') %dopar% {
       a_r_v = sample(a_para$sco)
       b_r_v = sample(b_para$sco)
       r_s_rhy = (gs_m %*% abs(b_r_v)) - (gs_m %*% abs(a_r_v))
-      r_s_rhy
+      return(r_s_rhy)
     }
 
     parallel::stopCluster(cl = my_cl)
