@@ -137,7 +137,7 @@ rhyScore_test = function(data, exp_des, t2g, group = NULL,
     grp_b = group[2]
     c = t(log2(data[,exp_des$group==grp_b]+1))
     t = exp_des$time[exp_des$group==grp_b]
-    res = harmonic.regression(c,t,normalize=T)
+    res = HarmonicRegression::harmonic.regression(c,t,normalize=T)
 
     ssr = res[['ssr']]
     b_para = res[['pars']]%>%dplyr::mutate(ex = amp*exp(phi*1i))%>%dplyr::mutate(sco = ex/sqrt(ssr))
