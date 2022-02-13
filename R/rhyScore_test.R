@@ -14,11 +14,26 @@
 #' @param bootstrap.n the number of time to perform bootstrapping.
 #'
 #' @return a data.frame containing the testing result of each gene set.
+#' @importFrom dplyr %>%
+#' @importFrom foreach %dopar%
+#' @importFrom stats p.adjust
 #' @export
 #'
 #' @examples
 rhyScore_test = function(data, exp_des, t2g, group = NULL,
                                         bootstrap.n = 10000) {
+
+
+  f_t2g = unique(t2g)%>%
+    filter(f_t2g[,2] %in% rownames(data))
+
+  # create a matrix filled with 0 with rownames as gene sets and colnames as genes we have
+  gs_m = matrix(0, nrow = length(unique(f_t2g[,1])),
+                ncol = nrow(data),
+                dimnames = list(unique(f_t2g[,1]),rownames(data)))
+
+  # replace the values with 1 if a gene is in a gene set
+  gs_m[as.matrix(f_t2g)] = rep(1,nrow(f_t2g))
 
 
   if (length(group) == 1) {
@@ -31,18 +46,6 @@ rhyScore_test = function(data, exp_des, t2g, group = NULL,
     ssr = res[['ssr']]
     para = res[['pars']]%>%dplyr::mutate(ex = amp*exp(phi*1i))%>%dplyr::mutate(sco = ex/sqrt(ssr))
 
-
-    # gene set analysis
-    f_t2g = unique(t2g)%>%
-      dplyr::filter(ensembl_gene %in% rownames(para))
-
-    # create a matrix filled with 0 with rownames as gene sets and colnames as genes we have
-    gs_m = matrix(0, nrow = length(unique(f_t2g$gs_name)),
-                  ncol = nrow(para),
-                  dimnames = list(unique(f_t2g$gs_name),rownames(para)))
-
-    # replace the values with 1 if a gene is in a gene set
-    gs_m[as.matrix(f_t2g[c('gs_name','ensembl_gene')])] = rep(1,nrow(f_t2g))
 
 
     # calculate scores
@@ -105,9 +108,9 @@ rhyScore_test = function(data, exp_des, t2g, group = NULL,
     count = rowSums(gs_m)
 
     gene = f_t2g%>%
-      dplyr::filter(ensembl_gene %in% rownames(para))%>%
-      dplyr::group_by(gs_name)%>%
-      dplyr::summarise(gene = paste(ensembl_gene, collapse = ','))
+      dplyr::filter(f_t2g[,2] %in% rownames(para))%>%
+      dplyr::group_by(f_t2g[,1])%>%
+      dplyr::summarise(gene = paste(f_t2g[,2], collapse = ','))
 
     result = data.frame('term' = rownames(gs_m),
                         'coh_score' = s_coh,
@@ -142,19 +145,6 @@ rhyScore_test = function(data, exp_des, t2g, group = NULL,
     ssr = res[['ssr']]
     b_para = res[['pars']]%>%dplyr::mutate(ex = amp*exp(phi*1i))%>%dplyr::mutate(sco = ex/sqrt(ssr))
 
-
-
-
-    f_t2g = unique(t2g)%>%
-      dplyr::filter(ensembl_gene %in% rownames(a_para))
-
-    # create a matrix filled with 0 with rownames as gene sets and colnames as genes we have
-    gs_m = matrix(0, nrow = length(unique(f_t2g$gs_name)),
-                  ncol = nrow(a_para),
-                  dimnames = list(unique(f_t2g$gs_name),rownames(a_para)))
-
-    # replace the values with 1 if a gene is in a gene set
-    gs_m[as.matrix(f_t2g[c('gs_name','ensembl_gene')])] = rep(1,nrow(f_t2g))
 
 
     # calculate diff scores
@@ -222,9 +212,9 @@ rhyScore_test = function(data, exp_des, t2g, group = NULL,
     count = rowSums(gs_m)
 
     gene = f_t2g%>%
-      dplyr::filter(ensembl_gene %in% rownames(a_para))%>%
-      dplyr::group_by(gs_name)%>%
-      dplyr::summarise(gene = paste(ensembl_gene, collapse = ','))
+      dplyr::filter(f_t2g[,2] %in% rownames(a_para))%>%
+      dplyr::group_by(f_t2g[,1])%>%
+      dplyr::summarise(gene = paste(f_t2g[,2], collapse = ','))
 
     result = data.frame('term' = rownames(gs_m),
                         'diff_coh_score' = diff_s_coh,
