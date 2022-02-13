@@ -21,11 +21,11 @@ rhyScore_test = function(data, exp_des, t2g, group = NULL,
                                         bootstrap.n = 10000) {
 
 
-  if (is.null(group)) {
+  if (length(group) == 1) {
 
     # harmonic regression for one group
-    c = t(log2(data+1))
-    t = exp_des$time
+    c = t(log2(data[,exp_des$group==group]+1))
+    t = exp_des$time[exp_des$group==group]
     res = HarmonicRegression::harmonic.regression(c,t,normalize=T)
 
     ssr = res[['ssr']]
