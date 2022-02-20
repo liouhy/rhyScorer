@@ -10,7 +10,8 @@ vignette: >
 ```{r, include = FALSE}
 knitr::opts_chunk$set(
   collapse = TRUE,
-  comment = "#>"
+  comment = "#>",
+  warning = FALSE
 )
 ```
 
@@ -42,7 +43,81 @@ The significance of the score of a gene set can be tested against the score of a
 
 
 ## Example
+We analyze RNA-seq data from mouse liver, which was sampled six times a day with 4-hour intervals with three different genotypes, wild-type (WT), Bmail-1-knockout (KO) ,and liver Bmal-1 reconstitution (LiverRE) [(Koronowski et al. 2019)](https://pubmed.ncbi.nlm.nih.gov/31150621/). The data we provide has already been preprocessed and stored in a `SummarizedExperiment` object.
 
-```{r setup}
+```{r setup, message=FALSE}
+# load packages
 library(rhyScorer)
+library(msigdbr)
+library(SummarizedExperiment)
+library(tidyverse)
+
+# load the example data
+se = readRDS(system.file('extdata', 'SRP153814.RDS', package = 'rhyScorer'))
+assays(se)
 ```
+
+There are four assays in the example data and we will select the abundance, which represents Transcript Per Million (TPM), for the downstream analysis. 
+
+```{r}
+abun = assays(se)[[3]]
+abun[1:5,1:5]
+```
+
+This normalized count matrix contains 28903 genes and 54 samples. These samples include three genotypes, six Zeitgeber time, and three replicates, as shown below. We then use this information to create a data frame of the experimental design that will be a required input for `rhyScore_test`. The data frame must at least contain two columns with the names of "group" and "time".
+
+```{r}
+dim(abun)
+colData(se)[c('time_of_harvest','genotype/variation')]
+exp_des = data.frame(group=as.factor(rep(c('WT','KO','LiverRE'),c(18,18,18))),
+                     time=rep(rep(c(0,4,8,12,16,20),c(3,3,3,3,3,3)),3),
+                     rep=as.factor(rep(c(1,2,3),18)))
+```
+
+Next, we filter out the lowly expressed genes. Here we only retain the genes with TPM greater than 0.1 among 80% of the samples.
+
+```{r}
+keep = rowSums(abun>0.1)>=ncol(abun)*0.8
+data = abun[keep,]
+```
+
+Before running the analysis, users have to create a data frame with defined gene sets. We use the R package `msigdbr` to import KEGG gene set data frame from the Molecular Signatures Database (MSigDB). The gene ID in gene set data frame must be the same type of gene ID in the row names of the count matrix. Since the Ensembl gene IDs are used in our count matrix, we also select Ensembl gene IDs in the gene set data frame.
+
+```{r}
+m_df = msigdbr(species = "Mus musculus", category = 'C2', subcategory = 'CP:KEGG')
+t2g = m_df%>%dplyr::select(gs_name, ensembl_gene)%>%as.data.frame()
+head(t2g)
+```
+
+Now, we are ready to run `rhyScore_test()` to perform gene set enrichment of rhythmic expression. We first run the enrichment test within WT to enrich highly rhythmic and phase coherent gene sets.
+
+```{r}
+res = rhyScore_test(data, exp_des, t2g, group = 'WT', bootstrap.n = 1000)
+head(res[order(res$adjp_coh),c(1,4,5,6)])
+head(res[order(res$adjp_rhy),c(1,7,8)])
+```
+
+We show the result of top coherent or rhythmic gene sets. Because here we only run boostrapping for 1000 times to speed up the computation, the least p value we can get is 1/1000. To obtain a reasonable number of significant gene sets, we recommend to run bootstrapping for at least 5000 times (default: 10000).
+
+Next, the function is also able to test the change of phase coherence and rhythmicity between two groups. For example, we test the change of KO against WT.
+
+```{r}
+res = rhyScore_test(data, exp_des, t2g, group = c('WT','KO'), bootstrap.n = 1000)
+colnames(res)
+head(res[order(res$adjp_coh),c(1,2,4,5,6,7)])
+head(res[order(res$adjp_rhy),c(1,3,8,9)])
+```
+```{r}
+head(res[order(res$adjp_coh),c(1,2,4,5,6,7)])
+head(res[order(res$adjp_rhy),c(1,3,8,9)])
+```
+
+You can see that most of the significant pathways have negative `diff_coh_score` or `diff_rhy_score`, which means that the gene sets lose their phase coherence or rhythmicity in KO in comparison with WT.
+
+
+
+## References
+Igor Dolgalev (2021). msigdbr: MSigDB Gene Sets for Multiple Organisms in a Tidy Data Format.
+
+
+
