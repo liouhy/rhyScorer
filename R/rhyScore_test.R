@@ -115,7 +115,7 @@ rhyScore_test = function(data, exp_des, t2g, group = NULL, bootstrap.n = 10000) 
 
     result = data.frame('term' = rownames(gs_m),
                         'coh_score' = s_coh,
-                        'rhy_socre' = s_rhy,
+                        'rhy_score' = s_rhy,
                         'phi' = phi,
                         'p_coh' = p_coh,
                         'adjp_coh' = adjp_coh,
@@ -219,7 +219,7 @@ rhyScore_test = function(data, exp_des, t2g, group = NULL, bootstrap.n = 10000) 
 
     result = data.frame('term' = rownames(gs_m),
                         'diff_coh_score' = diff_s_coh,
-                        'diff_rhy_socre' = diff_s_rhy,
+                        'diff_rhy_score' = diff_s_rhy,
                         'a_phi'= a_phi,
                         'b_phi'= b_phi,
                         'p_coh' = p_coh,
